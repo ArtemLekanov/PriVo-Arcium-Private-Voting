@@ -1,3 +1,4 @@
+import { Buffer } from "buffer";
 import {
   Connection,
   PublicKey,
@@ -76,7 +77,7 @@ export function createSubmitVoteInstruction(
       { pubkey: voteAccount, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
-    data,
+    data: Buffer.from(data),
   });
 }
 
@@ -190,7 +191,9 @@ async function getRevealResultEventDiscriminators(): Promise<Uint8Array[]> {
   const out: Uint8Array[] = [];
   for (const name of REVEAL_EVENT_NAMES) {
     const msg = new TextEncoder().encode(name);
-    const hash = await crypto.subtle.digest("SHA-256", msg);
+    const buffer = new ArrayBuffer(msg.length);
+    new Uint8Array(buffer).set(msg);
+    const hash = await crypto.subtle.digest("SHA-256", buffer);
     out.push(new Uint8Array(hash, 0, 8));
   }
   return out;
