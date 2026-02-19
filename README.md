@@ -52,7 +52,3 @@ Optional `.env`: `NEXT_PUBLIC_SOLANA_RPC_URL`, `ARCIUM_MXE_PROGRAM_ID` (for real
 - **Storage:** Prisma, SQLite (polls metadata / UX); on-chain for votes and results
 
 ---
-
-## Repository
-
-Open source on GitHub. All project materials are in English.
