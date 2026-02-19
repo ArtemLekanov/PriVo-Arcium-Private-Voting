@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Poll {
+  id          Int     @id @default(autoincrement())
+  authority   String
+  pollId      Int
+  question    String
+  description String?
+  createdAt   BigInt  // unix ms
+
+  @@unique([authority, pollId])
+  @@index([authority])
+}

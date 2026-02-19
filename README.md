@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PriVo — Private Voting on Solana (Arcium Integration)
 
-## Getting Started
+A functional Solana dApp for private on-chain voting: create polls, cast encrypted votes, and reveal aggregate results. Integrated with **Arcium** for confidential vote processing.
 
-First, run the development server:
+---
+
+## How Arcium Is Used
+
+- **Encryption (client → chain)**  
+  Votes are encrypted before leaving the user’s flow. The app uses Arcium’s cipher (RescueCipher + x25519) so that only ciphertext is sent on-chain. With `ARCIUM_MXE_PROGRAM_ID` set, the encryption key is the real MXE public key from your Arcium deployment on Devnet; otherwise a demo key is used for local testing.
+
+- **Private tally (on-chain)**  
+  The Solana program submits encrypted votes into Arcium’s MXE (Multi-Execution Environment). Counting happens **inside** the confidential environment; no one (including RPC nodes or the app backend) sees individual votes. Only the poll creator can trigger **Reveal results**, which runs an Arcium computation that outputs the final counts (Yes / No / Maybe) and writes them on-chain with integrity guarantees.
+
+- **Where it appears in the repo**  
+  - Server-side encryption: `app/arcium-client.ts`, `app/api/encrypt-vote/route.ts`  
+  - Building vote/reveal transactions that talk to the program + Arcium: `app/api/vote/route.ts`, `app/api/reveal-result/route.ts`  
+  - Program IDs and PDAs are aligned with an Arcium-backed Solana program (e.g. init_vote_stats, vote, reveal_result computation definitions).
+
+---
+
+## Privacy Benefits
+
+- **Vote secrecy**  
+  Individual votes are never stored or transmitted in the clear. Only ciphertext is on-chain; decryption and aggregation happen inside Arcium’s trusted execution environment.
+
+- **No early leakage**  
+  Intermediate counts are not visible. Results become public only when the poll creator runs **Reveal results**, which publishes only the final aggregates (and proofs), not who voted what.
+
+- **Integrity**  
+  The same environment that keeps votes private also attests to the correctness of the tally, so the published counts can be trusted.
+
+---
+
+## Run
 
 ```bash
+npm install
+npx prisma generate
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Optional `.env`: `NEXT_PUBLIC_SOLANA_RPC_URL`, `ARCIUM_MXE_PROGRAM_ID` (for real MXE key on Devnet).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Stack
 
-## Learn More
+- **Frontend:** Next.js, React, Tailwind CSS  
+- **Chain:** Solana (wallet-adapter, web3.js), Devnet  
+- **Confidential layer:** Arcium (RescueCipher, x25519, MXE)  
+- **Storage:** Prisma, SQLite (polls metadata / UX); on-chain for votes and results
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Repository
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open source on GitHub. All project materials are in English.
