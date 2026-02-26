@@ -13,6 +13,10 @@
 # testing
 /coverage
 
+# prisma
+/prisma/dev.db
+/prisma/dev.db-journal
+
 # next.js
 /.next/
 /out/
