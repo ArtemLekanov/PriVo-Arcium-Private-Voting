@@ -15,8 +15,8 @@ In transparent DAO voting, votes are visible or can be inferred before the tally
 
 ## What the app does
 
-- **Create poll** - Deploy a new Yes/No poll on Solana (creator pays; poll ID and creator are public).
-- **Vote** - Connect wallet, pick Yes or No; your vote is encrypted with Arcium and submitted on-chain. **Single-vote enforcement** (no double voting): one vote per wallet per poll.
+- **Create poll** - Deploy a new Yes/No poll on Solana (creator pays; poll ID and creator are public). Optionally enable **Whitelist mode** to restrict voting to specific wallet addresses.
+- **Vote** - Connect wallet, pick Yes or No; your vote is encrypted with Arcium and submitted on-chain. **Single-vote enforcement** (no double voting): one vote per wallet per poll. If the poll has a whitelist, only approved wallets can participate.
 - **Reveal results** - Poll creator triggers reveal; the MXE computes the result and writes it on-chain via a callback. After the callback (typically 15-60 seconds on Devnet), the outcome is shown.
 - **Results** - View the winning option for any revealed poll; exact vote counts are never revealed.
 
