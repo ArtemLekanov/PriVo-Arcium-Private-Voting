@@ -10,6 +10,7 @@ export type PollEntry = {
   revealedAt?: number;
   yesWins?: boolean;
   revealSignature?: string;
+  whitelist?: string[];
 };
 
 export async function GET(request: NextRequest) {
@@ -33,6 +34,7 @@ export async function GET(request: NextRequest) {
       revealedAt: p.revealedAt != null ? Number(p.revealedAt) : undefined,
       yesWins: p.yesWins ?? undefined,
       revealSignature: p.revealSignature ?? undefined,
+      whitelist: p.whitelist ? JSON.parse(p.whitelist) : undefined,
     }));
 
     return NextResponse.json({ polls });
@@ -48,11 +50,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { authority, pollId, question, description } = body as {
+    const { authority, pollId, question, description, whitelist } = body as {
       authority?: string;
       pollId?: number;
       question?: string;
       description?: string;
+      whitelist?: string[];
     };
     if (!authority || pollId === undefined || pollId === null || !question || typeof question !== "string") {
       return NextResponse.json(
@@ -71,10 +74,14 @@ export async function POST(request: Request) {
         question: question.slice(0, 200),
         description: typeof description === "string" ? description.slice(0, 500) : null,
         createdAt: now,
+        whitelist: Array.isArray(whitelist) && whitelist.length > 0 ? JSON.stringify(whitelist) : null,
       },
       update: {
         question: question.slice(0, 200),
         description: typeof description === "string" ? description.slice(0, 500) : null,
+        ...(whitelist !== undefined && {
+          whitelist: Array.isArray(whitelist) && whitelist.length > 0 ? JSON.stringify(whitelist) : null,
+        }),
       },
     });
     return NextResponse.json({ ok: true });

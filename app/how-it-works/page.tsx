@@ -6,11 +6,11 @@ import BackButton from "../components/BackButton";
 export default function HowItWorksPage() {
   return (
     <PageLayout>
-      <main className="max-w-4xl mx-auto py-20 px-6">
-        <div className="mb-6">
+      <main className="max-w-4xl mx-auto py-20 px-4 md:px-6">
+        <div className="mb-6 flex justify-center md:justify-start">
           <BackButton />
         </div>
-        <h1 className="text-4xl font-bold mb-8 text-center">How It Works</h1>
+        <h1 className="text-3xl md:text-5xl font-bold mb-8 text-center">How It Works</h1>
 
         <p className="text-center text-zinc-400 text-lg mb-10 max-w-2xl mx-auto">
           PriVo is a private voting app on Solana. Anyone can create a poll or vote in existing ones.
@@ -34,8 +34,8 @@ export default function HowItWorksPage() {
             <h2 className="text-2xl font-bold mb-4 text-fuchsia-400">In Simple Steps</h2>
             <ol className="list-decimal list-inside space-y-3 text-zinc-300">
               <li><strong className="text-zinc-100">Connect your wallet</strong> (e.g. Phantom) to PriVo.</li>
-              <li><strong className="text-zinc-100">Create a poll</strong>: set a short question and optional description. Your poll is stored on Solana.</li>
-              <li><strong className="text-zinc-100">Vote</strong>: pick an option (Yes or No). Your choice is encrypted with Arcium and sent on-chain. No one can see it.</li>
+              <li><strong className="text-zinc-100">Create a poll</strong>: set a short question and optional description. Optionally enable <strong className="text-zinc-100">Whitelist mode</strong> to restrict voting to specific wallet addresses. Your poll is stored on Solana.</li>
+              <li><strong className="text-zinc-100">Vote</strong>: pick an option (Yes or No). Your choice is encrypted with Arcium and sent on-chain. No one can see it. If the poll has a whitelist, only approved wallets can participate.</li>
               <li>Votes are <strong className="text-zinc-100">counted inside Arcium</strong>, in encrypted form. Only the winning side is ever revealed.</li>
               <li>When voting is over, the <strong className="text-zinc-100">poll creator</strong> runs &quot;Reveal results&quot;. The final outcome (which side won) is then published on Solana and shown in the Results page.</li>
             </ol>

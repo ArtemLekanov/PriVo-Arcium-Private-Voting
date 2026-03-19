@@ -58,6 +58,13 @@ function getVoteReceiptPDA(pollAcc: PublicKey, voter: PublicKey): [PublicKey, nu
   );
 }
 
+function getWhitelistPDA(pollAcc: PublicKey): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("whitelist"), pollAcc.toBuffer()],
+    PROGRAM_ID
+  );
+}
+
 function getVoteCompDefPDA(): PublicKey {
   const baseSeed = getArciumAccountBaseSeed("ComputationDefinitionAccount");
   const offsetBytes = getCompDefAccOffset("vote");
@@ -138,6 +145,7 @@ export async function POST(request: Request) {
     const [signPda] = getSignPDA();
     const [pollAcc] = getPollPDA(authority, Number(pollId));
     const [voteReceiptPda] = getVoteReceiptPDA(pollAcc, payer);
+    const [whitelistPda] = getWhitelistPDA(pollAcc);
     const computationOffset = randomU64();
 
     const mxeAccount = getMXEAccAddress(PROGRAM_ID);
@@ -180,6 +188,7 @@ export async function POST(request: Request) {
         { pubkey: pollAcc, isSigner: false, isWritable: true },
         { pubkey: authority, isSigner: false, isWritable: false },
         { pubkey: voteReceiptPda, isSigner: false, isWritable: true },
+        { pubkey: whitelistPda, isSigner: false, isWritable: false },
       ],
       data: Buffer.from(data),
     });

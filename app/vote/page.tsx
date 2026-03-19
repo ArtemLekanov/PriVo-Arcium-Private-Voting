@@ -13,6 +13,7 @@ export type PollEntry = {
   question: string;
   description?: string;
   createdAt?: number;
+  whitelist?: string[];
 };
 
 export default function VotePage() {
@@ -306,7 +307,6 @@ export default function VotePage() {
         throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
       }
 
-
       const votes = JSON.parse(localStorage.getItem("votes") || "[]");
       votes.push({
         ...encryptedVote,
@@ -350,6 +350,11 @@ export default function VotePage() {
         return;
       }
 
+      if (errorMessage.includes("Custom\":4") || errorMessage.includes("Custom\": 4") || errorMessage.includes("Custom\":6004") || errorMessage.includes("0x1774")) {
+        setStatus("Your wallet is not in the whitelist for this poll. Only whitelisted addresses can vote.");
+        return;
+      }
+
       if (
         errorMessage.includes("already in use") ||
         errorMessage.includes("account already exists")
@@ -378,7 +383,7 @@ export default function VotePage() {
     return (
       <PageLayout>
         <main className="max-w-3xl mx-auto py-20 px-6 text-center">
-          <h1 className="text-4xl font-bold mb-4">Thank you!</h1>
+          <h1 className="text-2xl md:text-4xl font-bold mb-4">Thank you!</h1>
           <p className="text-xl text-zinc-300 mb-2">Your vote has been submitted.</p>
           
           {txSignature && (
@@ -441,21 +446,21 @@ export default function VotePage() {
 
   return (
     <PageLayout>
-      <main className="max-w-3xl mx-auto py-20 px-6">
+      <main className="max-w-3xl mx-auto py-20 px-4 md:px-6">
         {viewMode === "list" && (
           <>
-            <div className="flex items-center justify-center gap-3 mb-10">
-              <h1 className="text-4xl font-bold">DAO Governance Vote</h1>
+            <div className="flex flex-col items-center justify-center gap-2 mb-8 md:mb-10">
+              <h1 className="text-3xl md:text-5xl font-bold text-center">DAO Governance Vote</h1>
               <span className="inline-flex items-center rounded-full bg-fuchsia-500/10 px-2.5 py-0.5 text-xs font-medium text-fuchsia-300 border border-fuchsia-500/30">
                 Devnet
               </span>
             </div>
 
-            <div className="flex gap-3 mb-8 border-b border-fuchsia-500/30 pb-3">
+            <div className="flex gap-2 md:gap-3 mb-6 md:mb-8 border-b border-fuchsia-500/30 pb-3">
               <button
                 type="button"
                 onClick={() => setListSection("all")}
-                className={`flex-1 py-3.5 px-4 rounded-xl text-base font-bold tracking-wide transition shadow-sm ${
+                className={`flex-1 py-2.5 md:py-3.5 px-2 md:px-4 rounded-xl text-sm md:text-base font-bold tracking-wide transition shadow-sm ${
                   listSection === "all"
                     ? "bg-fuchsia-500/32 text-fuchsia-100 border border-fuchsia-400/70 shadow-[0_0_0_1px_rgba(232,121,249,0.22),0_10px_26px_-18px_rgba(232,121,249,0.85)]"
                     : "bg-fuchsia-500/14 text-zinc-100 border border-fuchsia-500/25 hover:bg-fuchsia-500/20 hover:border-fuchsia-400/50"
@@ -466,7 +471,7 @@ export default function VotePage() {
               <button
                 type="button"
                 onClick={() => setListSection("profile")}
-                className={`flex-1 py-3.5 px-4 rounded-xl text-base font-bold tracking-wide transition shadow-sm ${
+                className={`flex-1 py-2.5 md:py-3.5 px-2 md:px-4 rounded-xl text-sm md:text-base font-bold tracking-wide transition shadow-sm ${
                   listSection === "profile"
                     ? "bg-fuchsia-500/32 text-fuchsia-100 border border-fuchsia-400/70 shadow-[0_0_0_1px_rgba(232,121,249,0.22),0_10px_26px_-18px_rgba(232,121,249,0.85)]"
                     : "bg-fuchsia-500/14 text-zinc-100 border border-fuchsia-500/25 hover:bg-fuchsia-500/20 hover:border-fuchsia-400/50"
@@ -477,13 +482,13 @@ export default function VotePage() {
               <button
                 type="button"
                 onClick={() => setListSection("manual")}
-                className={`flex-1 py-3.5 px-4 rounded-xl text-base font-bold tracking-wide transition shadow-sm ${
+                className={`flex-1 py-2.5 md:py-3.5 px-2 md:px-4 rounded-xl text-sm md:text-base font-bold tracking-wide transition shadow-sm ${
                   listSection === "manual"
                     ? "bg-fuchsia-500/32 text-fuchsia-100 border border-fuchsia-400/70 shadow-[0_0_0_1px_rgba(232,121,249,0.22),0_10px_26px_-18px_rgba(232,121,249,0.85)]"
                     : "bg-fuchsia-500/14 text-zinc-100 border border-fuchsia-500/25 hover:bg-fuchsia-500/20 hover:border-fuchsia-400/50"
                 }`}
               >
-                Manual Search
+                Manual
               </button>
             </div>
 
@@ -582,7 +587,14 @@ export default function VotePage() {
                           }`}
                         >
                           <div className="flex flex-col items-start">
-                            <span className="font-bold text-lg">{poll.question || `Poll ${poll.pollId}`}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-lg">{poll.question || `Poll ${poll.pollId}`}</span>
+                              {poll.whitelist && poll.whitelist.length > 0 && (
+                                <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-500/30">
+                                  WL
+                                </span>
+                              )}
+                            </div>
                             {poll.description && (
                               <span className="text-xs text-zinc-300 mt-0.5 truncate block" title={poll.description}>
                                 {poll.description.length > 50 ? poll.description.slice(0, 50) + "…" : poll.description}
@@ -710,7 +722,14 @@ export default function VotePage() {
                               }`}
                             >
                               <div className="flex flex-col items-start">
-                                <span className="font-bold text-lg">{poll.question || `Poll ${poll.pollId}`}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-lg">{poll.question || `Poll ${poll.pollId}`}</span>
+                                  {poll.whitelist && poll.whitelist.length > 0 && (
+                                    <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-500/30">
+                                      WL
+                                    </span>
+                                  )}
+                                </div>
                                 {poll.description && (
                                   <span className="text-xs text-zinc-300 mt-0.5 truncate block" title={poll.description}>
                                     {poll.description.length > 50 ? poll.description.slice(0, 50) + "…" : poll.description}
@@ -765,12 +784,12 @@ export default function VotePage() {
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-3 md:gap-4">
               <BackButton />
               <button
                 onClick={() => setViewMode("poll")}
                 disabled={!effectivePoll}
-                className="btn-glow inline-flex items-center justify-center rounded-full border border-fuchsia-500 bg-transparent px-8 py-4 text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px]"
+                className="btn-glow inline-flex items-center justify-center rounded-full border border-fuchsia-500 bg-transparent px-6 py-3 md:px-8 md:py-4 text-lg md:text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px] md:min-w-[200px]"
               >
                 Enter
               </button>
@@ -790,13 +809,20 @@ export default function VotePage() {
               <p className="text-xs text-zinc-400 break-all font-mono">
                 Poll ID: {effectivePoll.pollId}  Creator: {effectivePoll.authority}
               </p>
+              {effectivePoll.whitelist && effectivePoll.whitelist.length > 0 && (
+                <div className="mt-3 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/25">
+                  <p className="text-sm font-medium text-amber-300">
+                    Whitelist only
+                  </p>
+                </div>
+              )}
             </div>
 
-            <div className="flex gap-4 mb-8">
+            <div className="flex gap-3 md:gap-4 mb-8">
               {options.map((option) => (
                 <label
                   key={option}
-                  className="flex flex-1 items-center justify-center gap-3 p-4 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 transition cursor-pointer min-w-0"
+                  className="flex flex-1 items-center justify-center gap-2 md:gap-3 p-3 md:p-4 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 transition cursor-pointer min-w-0"
                 >
                   <input
                     type="radio"
@@ -804,9 +830,9 @@ export default function VotePage() {
                     value={option}
                     onChange={() => setSelectedOption(option)}
                     disabled={hasVoted}
-                    className="w-5 h-5 shrink-0 text-fuchsia-500"
+                    className="w-5 h-5 shrink-0 accent-fuchsia-500"
                   />
-                  <span className="text-lg text-zinc-100">{option}</span>
+                  <span className="text-base md:text-lg text-zinc-100">{option}</span>
                 </label>
               ))}
             </div>
@@ -818,11 +844,11 @@ export default function VotePage() {
             )}
 
             <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center justify-between gap-4 w-full">
+              <div className="flex items-center justify-between gap-3 md:gap-4 w-full">
                 <button
                   type="button"
                   onClick={() => setViewMode("list")}
-                  className="btn-glow inline-flex items-center justify-center gap-2 rounded-full border border-fuchsia-500 bg-transparent px-8 py-4 text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition min-w-[200px]"
+                  className="btn-glow inline-flex items-center justify-center gap-2 rounded-full border border-fuchsia-500 bg-transparent px-6 py-3 md:px-8 md:py-4 text-lg md:text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition min-w-[120px] md:min-w-[200px]"
                 >
                   <svg
                     className="w-5 h-5"
@@ -843,7 +869,7 @@ export default function VotePage() {
                 <button
                   onClick={handleSubmit}
                   disabled={!selectedOption || hasVoted || !connected || submitting}
-                  className="btn-glow inline-flex items-center justify-center rounded-full border border-fuchsia-500 bg-transparent px-8 py-4 text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed min-w-[200px]"
+                  className="btn-glow inline-flex items-center justify-center rounded-full border border-fuchsia-500 bg-transparent px-6 py-3 md:px-8 md:py-4 text-lg md:text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] md:min-w-[200px]"
                 >
                   Submit vote
                 </button>

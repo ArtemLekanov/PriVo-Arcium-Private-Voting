@@ -6,7 +6,7 @@ export default function BackButton() {
   return (
     <Link
       href="/"
-      className="btn-glow inline-flex items-center justify-center gap-2 rounded-full border border-fuchsia-500 bg-transparent px-8 py-4 text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition min-w-[200px]"
+      className="btn-glow inline-flex items-center justify-center gap-2 rounded-full border border-fuchsia-500 bg-transparent px-6 py-3 md:px-8 md:py-4 text-lg md:text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition min-w-[140px] md:min-w-[200px]"
     >
       <svg
         className="w-5 h-5"

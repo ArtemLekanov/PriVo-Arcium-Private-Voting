@@ -13,12 +13,13 @@ model Poll {
   pollId      Int
   question    String
   description String?
-  createdAt   BigInt  // unix ms
+  createdAt   BigInt
 
-  // Последнее раскрытие результатов (обновляется при каждом reveal)
-  revealedAt     BigInt?   // unix ms — когда в последний раз раскрыли
-  yesWins        Boolean?  // true = победил Yes, false = No
-  revealSignature String?  // подпись callback-транзакции (опционально)
+  revealedAt     BigInt?
+  yesWins        Boolean?
+  revealSignature String?
+
+  whitelist String?
 
   @@unique([authority, pollId])
   @@index([authority])

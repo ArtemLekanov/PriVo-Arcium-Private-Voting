@@ -96,6 +96,21 @@ body {
   transition: all 0.2s !important;
 }
 
+@media (max-width: 767px) {
+  .wallet-adapter-button {
+    height: 36px !important;
+    min-width: auto !important;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+    line-height: 36px !important;
+  }
+  .wallet-adapter-button-start-icon,
+  .wallet-adapter-button-start-icon img {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
 .wallet-adapter-button:hover {
   background-color: rgba(217, 70, 239, 0.1) !important;
   border-color: rgba(217, 70, 239, 0.8) !important;

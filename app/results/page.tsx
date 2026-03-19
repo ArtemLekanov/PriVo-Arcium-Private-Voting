@@ -178,7 +178,7 @@ export default function ResultsPage() {
         setCallbackSig(parsed.callbackSig ?? null);
         setLoadingFetch(false);
         return;
-      } catch { }
+      } catch {}
     }
 
     const storedSig = typeof window !== "undefined"
@@ -302,18 +302,18 @@ export default function ResultsPage() {
 
   return (
     <PageLayout>
-      <main className="max-w-4xl mx-auto py-20 px-6">
-        <div className="mb-6">
+      <main className="max-w-4xl mx-auto py-20 px-4 md:px-6">
+        <div className="mb-6 flex justify-center md:justify-start">
           <BackButton />
         </div>
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <h1 className="text-4xl font-bold">Voting Results</h1>
+        <div className="flex flex-col items-center justify-center gap-2 mb-6 md:mb-8">
+          <h1 className="text-3xl md:text-5xl font-bold text-center">Voting Results</h1>
           <span className="inline-flex items-center rounded-full bg-fuchsia-500/10 px-2.5 py-0.5 text-xs font-medium text-fuchsia-300 border border-fuchsia-500/30">
             Devnet
           </span>
         </div>
 
-        <div className="relative mb-8 px-5 pt-3 pb-5 rounded-xl bg-zinc-700/30 border border-zinc-600 text-center">
+        <div className="relative mb-6 md:mb-8 px-4 md:px-5 pt-3 pb-4 md:pb-5 rounded-xl bg-zinc-700/30 border border-zinc-600 text-center">
           <span
             className="absolute top-2 left-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-zinc-600/80 text-zinc-400 text-[10px] font-semibold"
             aria-hidden
@@ -326,17 +326,17 @@ export default function ResultsPage() {
           >
             i
           </span>
-          <p className="text-zinc-200 font-medium text-xl">Private Voting Results</p>
-          <p className="text-base text-zinc-400 mt-2 mx-auto">
+          <p className="text-zinc-200 font-medium text-base md:text-xl">Private Voting Results</p>
+          <p className="text-sm md:text-base text-zinc-400 mt-2 mx-auto">
             After voting, the poll creator clicks &quot;Reveal results&quot;. The encrypted computation runs on the Arcium MXE and returns the winner (Yes or No) without revealing exact vote counts. When the creator reveals, the result and the date of the last reveal are saved. You can reveal again, the date shown is always the latest See <a href="/how-it-works" className="text-fuchsia-400 hover:underline">How it works</a>.
           </p>
         </div>
 
-        <div className="flex gap-3 mb-8 border-b border-fuchsia-500/30 pb-3">
+        <div className="flex gap-2 md:gap-3 mb-6 md:mb-8 border-b border-fuchsia-500/30 pb-3">
           <button
             type="button"
             onClick={() => setResultsSection("all")}
-            className={`flex-1 py-3.5 px-4 rounded-xl text-base font-bold tracking-wide transition shadow-sm ${
+            className={`flex-1 py-2.5 md:py-3.5 px-3 md:px-4 rounded-xl text-sm md:text-base font-bold tracking-wide transition shadow-sm ${
               resultsSection === "all"
                 ? "bg-fuchsia-500/32 text-fuchsia-100 border border-fuchsia-400/70 shadow-[0_0_0_1px_rgba(232,121,249,0.22),0_10px_26px_-18px_rgba(232,121,249,0.85)]"
                 : "bg-fuchsia-500/14 text-zinc-100 border border-fuchsia-500/25 hover:bg-fuchsia-500/20 hover:border-fuchsia-400/50"
@@ -347,7 +347,7 @@ export default function ResultsPage() {
           <button
             type="button"
             onClick={() => setResultsSection("my")}
-            className={`flex-1 py-3.5 px-4 rounded-xl text-base font-bold tracking-wide transition shadow-sm ${
+            className={`flex-1 py-2.5 md:py-3.5 px-3 md:px-4 rounded-xl text-sm md:text-base font-bold tracking-wide transition shadow-sm ${
               resultsSection === "my"
                 ? "bg-fuchsia-500/32 text-fuchsia-100 border border-fuchsia-400/70 shadow-[0_0_0_1px_rgba(232,121,249,0.22),0_10px_26px_-18px_rgba(232,121,249,0.85)]"
                 : "bg-fuchsia-500/14 text-zinc-100 border border-fuchsia-500/25 hover:bg-fuchsia-500/20 hover:border-fuchsia-400/50"
@@ -413,7 +413,7 @@ export default function ResultsPage() {
           <>
             {effectivePollInfo && revealResult && (
               <div className="mb-10 text-center">
-                <h2 className="text-4xl font-bold mb-4">Thank you!</h2>
+                <h2 className="text-2xl md:text-4xl font-bold mb-4">Thank you!</h2>
                 <p className="text-xl text-zinc-300 mb-4 text-center">
                   Your results have been revealed.
                   <span className="inline-flex align-middle ml-2 text-green-400" aria-hidden>

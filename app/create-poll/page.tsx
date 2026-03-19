@@ -17,8 +17,18 @@ export default function CreatePollPage() {
   const [status, setStatus] = useState("");
   const [txSignature, setTxSignature] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [whitelistEnabled, setWhitelistEnabled] = useState(false);
+  const [whitelistText, setWhitelistText] = useState("");
 
   const questionForChain = question.slice(0, QUESTION_MAX_LEN);
+
+  const parseWhitelistAddresses = (): string[] => {
+    if (!whitelistEnabled || !whitelistText.trim()) return [];
+    return whitelistText
+      .split(/[\n,]+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  };
 
   const handleCreatePoll = async () => {
     if (!connected || !publicKey) {
@@ -45,8 +55,42 @@ export default function CreatePollPage() {
       if (confirmation.value.err) {
         throw new Error(`Transaction rejected on network: ${JSON.stringify(confirmation.value.err)}`);
       }
+      const wlAddresses = parseWhitelistAddresses();
+
+      if (wlAddresses.length > 0) {
+        setStatus("Setting whitelist on-chain...");
+        const wlRes = await fetch("/api/set-whitelist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            publicKey: publicKey.toBase58(),
+            pollId,
+            addresses: wlAddresses,
+          }),
+        });
+        if (!wlRes.ok) {
+          const err = await wlRes.json().catch(() => ({}));
+          throw new Error((err as { error?: string }).error || "Failed to build whitelist transaction");
+        }
+        const { transaction: wlBase64 } = await wlRes.json();
+        const wlBytes = Uint8Array.from(atob(wlBase64), (c) => c.charCodeAt(0));
+        const { Transaction: Tx } = await import("@solana/web3.js");
+        const wlTx = Tx.from(wlBytes);
+
+        setStatus("Please sign the whitelist transaction...");
+        const wlSig = await sendTransaction(wlTx, connection, {
+          skipPreflight: true,
+          maxRetries: 3,
+        });
+        setStatus("Waiting for whitelist confirmation...");
+        const wlConf = await connection.confirmTransaction(wlSig, "confirmed");
+        if (wlConf.value.err) {
+          throw new Error(`Whitelist transaction failed: ${JSON.stringify(wlConf.value.err)}`);
+        }
+      }
+
       setDone(true);
-      setStatus("Poll created.");
+      setStatus(wlAddresses.length > 0 ? "Poll created with whitelist." : "Poll created.");
       try {
         localStorage.setItem(`pollAuthority_${pollId}`, publicKey.toBase58());
         localStorage.setItem(`pollQuestion_${pollId}`, questionForChain);
@@ -59,6 +103,7 @@ export default function CreatePollPage() {
             pollId,
             question: questionForChain,
             ...(description.trim() && { description: description.slice(0, 500) }),
+            ...(wlAddresses.length > 0 && { whitelist: wlAddresses }),
           }),
         });
       } catch (_) {}
@@ -121,7 +166,7 @@ export default function CreatePollPage() {
     return (
       <PageLayout>
         <main className="max-w-3xl mx-auto py-20 px-6 text-center">
-          <h1 className="text-4xl font-bold mb-4 flex items-center justify-center gap-2">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4 flex items-center justify-center gap-2">
             Poll Created
             <span className="inline-flex text-green-400" aria-hidden>
               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,8 +204,8 @@ export default function CreatePollPage() {
   return (
     <PageLayout>
       <main className="max-w-2xl mx-auto py-20 px-6">
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <h1 className="text-4xl font-bold">Create Poll</h1>
+        <div className="flex flex-col items-center justify-center gap-2 mb-8">
+          <h1 className="text-3xl md:text-6xl font-bold">Create Poll</h1>
           <span className="inline-flex items-center rounded-full bg-fuchsia-500/10 px-2.5 py-0.5 text-xs font-medium text-fuchsia-300 border border-fuchsia-500/30">
             Devnet
           </span>
@@ -231,13 +276,47 @@ export default function CreatePollPage() {
               />
               <p className="text-xs text-zinc-400 mt-1">{description.length}/500</p>
             </div>
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <label className="block text-lg font-medium text-zinc-200">Access Control</label>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWhitelistEnabled((v) => !v)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition ${
+                  whitelistEnabled
+                    ? "border-fuchsia-400/70 bg-fuchsia-500/20 text-fuchsia-100"
+                    : "border-fuchsia-500/25 bg-fuchsia-500/10 text-zinc-300 hover:bg-fuchsia-500/15"
+                }`}
+              >
+                <span className="font-medium">{whitelistEnabled ? "Whitelist mode (restricted)" : "Open poll (anyone can vote)"}</span>
+                <span className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition ${whitelistEnabled ? "bg-fuchsia-500" : "bg-zinc-600"}`}>
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${whitelistEnabled ? "translate-x-5" : "translate-x-0.5"} mt-0.5`} />
+                </span>
+              </button>
+              {whitelistEnabled && (
+                <div className="mt-3">
+                  <textarea
+                    rows={4}
+                    value={whitelistText}
+                    onChange={(e) => setWhitelistText(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/25 text-zinc-100 placeholder:text-zinc-400 focus:bg-fuchsia-500/15 focus:border-fuchsia-400/40 focus:outline-none transition resize-y"
+                    placeholder={"Paste wallet addresses (one per line or comma-separated)..."}
+                  />
+                  <p className="text-xs text-zinc-400 mt-1">
+                    {parseWhitelistAddresses().length} address{parseWhitelistAddresses().length !== 1 ? "es" : ""} detected. Max 100. Only these wallets will be able to vote.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-3 md:gap-4">
               <BackButton />
               <button
                 type="button"
                 onClick={handleCreatePoll}
                 disabled={!!status && !status.startsWith("Error") && status !== "Signature cancelled." && !status.includes("Poll ID is likely already in use")}
-                className="btn-glow inline-flex items-center justify-center gap-2 rounded-full border border-fuchsia-500 bg-transparent px-8 py-4 text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition min-w-[200px] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-glow inline-flex items-center justify-center gap-2 rounded-full border border-fuchsia-500 bg-transparent px-6 py-3 md:px-8 md:py-4 text-lg md:text-xl font-bold text-fuchsia-100 hover:bg-fuchsia-500 hover:text-white transition min-w-[140px] md:min-w-[200px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Create Poll
               </button>
